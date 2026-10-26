@@ -77,12 +77,16 @@ h2 { margin: 24px 0 4px; font-size: 1.1rem; }
 .team .score { font-weight: 700; font-size: 1.15rem; min-width: 36px; text-align: right; }
 .team.loser .score, .team.loser .name { opacity: .6; }
 
-.tv { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.tv { display: grid; gap: 6px; margin-top: 10px; }
+.tv-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tv-label { width: 100px; flex-shrink: 0; color: var(--muted); font-size: .8rem; }
+.tv .none { color: var(--muted); font-size: .8rem; }
 .chip {
   background: var(--card-2); border: 1px solid var(--border);
   border-radius: 999px; padding: 2px 10px; font-size: .8rem;
 }
 .chip.national { border-color: var(--accent); font-weight: 600; }
+.chip.de { border-color: #3a7bd5; }
 .chip small { color: var(--muted); margin-left: 4px; }
 
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }

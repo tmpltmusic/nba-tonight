@@ -53,23 +53,32 @@ function sortGames(events) {
   return [...events].sort((a, b) => (isFav(b) - isFav(a)) || (new Date(a.date) - new Date(b.date)));
 }
 
-// Alle Sender sammeln: national (USA) zuerst, dann Heim- und Auswärts-Regionalsender
+// Sender sammeln, getrennt nach USA national und Regionalsendern (nur im Teamgebiet zu sehen)
 function channels(ev) {
   const comp = ev.competitions[0];
-  const seen = new Map();
+  const { away, home } = teams(ev);
+  const teamOf = { home: home.team.abbreviation, away: away.team.abbreviation };
+  const national = new Set();
+  const regional = new Map();
   for (const g of comp.geoBroadcasts || []) {
     const name = g.media?.shortName;
     if (!name) continue;
     const market = (g.market?.type || "").toLowerCase();
-    const label = market === "national" ? "" : market === "home" ? "Heim" : market === "away" ? "Gast" : "";
-    if (!seen.has(name)) seen.set(name, { name, national: market === "national", label });
+    if (market === "national") national.add(name);
+    else regional.set(name, teamOf[market] || "");
   }
   for (const b of comp.broadcasts || []) {
     for (const name of b.names || []) {
-      if (!seen.has(name)) seen.set(name, { name, national: (b.market || "") === "national", label: "" });
+      if (national.has(name) || regional.has(name)) continue;
+      if ((b.market || "") === "national") national.add(name);
+      else regional.set(name, teamOf[b.market] || "");
     }
   }
-  return [...seen.values()].sort((a, b) => b.national - a.national);
+  for (const n of national) regional.delete(n);
+  return {
+    national: [...national],
+    regional: [...regional].map(([name, team]) => ({ name, team })),
+  };
 }
 
 function highlightUrl(ev) {
@@ -112,9 +121,14 @@ function gameCard(ev, { withBox }) {
   const state = ev.status.type.state;
   const fav = isFav(ev);
   const tv = channels(ev);
-  const tvHtml = tv.length
-    ? tv.map((c) => `<span class="chip${c.national ? " national" : ""}">📺 ${esc(c.name)}${c.label ? `<small>${c.label}</small>` : ""}</span>`).join("")
-    : `<span class="chip">📺 nur League Pass</span>`;
+  const tvHtml = `
+    <div class="tv-row"><span class="tv-label">🇺🇸 USA</span>${
+      tv.national.length ? tv.national.map((n) => `<span class="chip national">${esc(n)}</span>`).join("") : `<span class="none">kein nationaler Sender</span>`
+    }</div>
+    ${tv.regional.length ? `<div class="tv-row"><span class="tv-label">📍 Regional</span>${
+      tv.regional.map((c) => `<span class="chip">${esc(c.name)}${c.team ? `<small>${esc(c.team)}</small>` : ""}</span>`).join("")
+    }</div>` : ""}
+    <div class="tv-row"><span class="tv-label">🇩🇪 Deutschland</span><span class="chip de">NBA League Pass</span></div>`;
 
   const actions = [];
   if (state === "post") actions.push(`<a class="hl" href="${esc(highlightUrl(ev))}" target="_blank" rel="noopener">▶ Highlights</a>`);
