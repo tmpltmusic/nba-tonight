@@ -1,0 +1,105 @@
+:root {
+  --bg: #0f1117;
+  --card: #1a1d27;
+  --card-2: #232735;
+  --text: #e8eaf0;
+  --muted: #9097a8;
+  --accent: #f5a623;
+  --lakers-purple: #552583;
+  --lakers-gold: #fdb927;
+  --live: #e5484d;
+  --border: #2c3142;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f4f5f8;
+    --card: #ffffff;
+    --card-2: #f0f1f5;
+    --text: #1a1d27;
+    --muted: #5d6475;
+    --border: #dfe2ea;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+a { color: var(--accent); }
+
+.top {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 12px 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.top h1 { margin: 0; font-size: 1.25rem; }
+.day-nav { display: flex; align-items: center; gap: 6px; }
+.day-nav button {
+  background: var(--card); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 4px 10px; font-size: 1rem; cursor: pointer;
+}
+.day-nav .today-btn { font-size: .85rem; }
+#day-label { min-width: 120px; text-align: center; font-weight: 600; }
+
+main { max-width: 820px; margin: 0 auto; padding: 8px 16px 32px; }
+h2 { margin: 24px 0 4px; font-size: 1.1rem; }
+.hint { margin: 0 0 12px; color: var(--muted); font-size: .85rem; }
+.loading, .empty { color: var(--muted); }
+
+.games { display: grid; gap: 10px; }
+.game {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.game.lakers {
+  border: 2px solid var(--lakers-gold);
+  background: linear-gradient(135deg, rgba(85,37,131,.35), var(--card) 60%);
+}
+.game-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.time { font-weight: 700; font-size: 1.05rem; }
+.status { color: var(--muted); font-size: .85rem; }
+.status.live { color: var(--live); font-weight: 700; }
+.status.live::before { content: "● "; }
+.badge { background: var(--lakers-purple); color: var(--lakers-gold); font-size: .7rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; }
+
+.team { display: flex; align-items: center; gap: 10px; padding: 3px 0; }
+.team img { width: 28px; height: 28px; object-fit: contain; }
+.team .name { flex: 1; }
+.team .rec { color: var(--muted); font-size: .8rem; margin-left: 4px; }
+.team .score { font-weight: 700; font-size: 1.15rem; min-width: 36px; text-align: right; }
+.team.loser .score, .team.loser .name { opacity: .6; }
+
+.tv { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip {
+  background: var(--card-2); border: 1px solid var(--border);
+  border-radius: 999px; padding: 2px 10px; font-size: .8rem;
+}
+.chip.national { border-color: var(--accent); font-weight: 600; }
+.chip small { color: var(--muted); margin-left: 4px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.actions a, .actions button {
+  background: var(--card-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 6px 10px; font-size: .85rem; text-decoration: none; cursor: pointer;
+}
+.actions .hl { background: #c4302b; border-color: #c4302b; color: #fff; }
+
+.box { margin-top: 10px; overflow-x: auto; }
+.box h4 { margin: 12px 0 4px; font-size: .9rem; }
+.box table { border-collapse: collapse; width: 100%; font-size: .8rem; white-space: nowrap; }
+.box th, .box td { padding: 4px 6px; text-align: right; border-bottom: 1px solid var(--border); }
+.box th:first-child, .box td:first-child { text-align: left; position: sticky; left: 0; background: var(--card); }
+.box th { color: var(--muted); font-weight: 600; }
+.box tr.bench td:first-child { color: var(--muted); }
+.box td.pts { font-weight: 700; }
+
+footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 16px; }

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>NBA Tonight</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏀</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>🏀 NBA Tonight</h1>
+    <nav class="day-nav">
+      <button id="prev" aria-label="Einen Tag zurück">‹</button>
+      <span id="day-label"></span>
+      <button id="next" aria-label="Einen Tag vor">›</button>
+      <button id="today" class="today-btn">Heute</button>
+    </nav>
+  </header>
+
+  <main>
+    <section>
+      <h2 id="tonight-title">Heute Nacht</h2>
+      <p class="hint">Anwurfzeiten in deutscher Zeit. In Deutschland laufen alle Spiele im <a href="https://www.nba.com/watch/league-pass-stream" target="_blank" rel="noopener">NBA League Pass</a>.</p>
+      <div id="tonight" class="games"><p class="loading">Lade Spiele …</p></div>
+    </section>
+
+    <section>
+      <h2 id="last-title">Letzte Nacht</h2>
+      <div id="last" class="games"><p class="loading">Lade Ergebnisse …</p></div>
+    </section>
+  </main>
+
+  <footer>
+    Daten: ESPN · Lakers-Spiele stehen immer oben · <span id="updated"></span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
