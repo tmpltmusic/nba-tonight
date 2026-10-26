@@ -81,6 +81,19 @@ function channels(ev) {
   };
 }
 
+// Die großen Sender, die Michi interessieren; alles andere landet unter "weitere Sender"
+const BIG = [
+  [/^nba ?tv$/i, "NBA TV"],
+  [/^espn/i, "ESPN"],
+  [/^abc$/i, "ABC"],
+  [/^(nbc|peacock)$/i, "NBC / Peacock"],
+  [/prime/i, "Prime Video"],
+];
+function bigChannel(name) {
+  const hit = BIG.find(([re]) => re.test(name.trim()));
+  return hit ? hit[1] : null;
+}
+
 function highlightUrl(ev) {
   // ESPN-Video, falls vorhanden, sonst YouTube-Suche nach den offiziellen NBA-Highlights
   for (const h of ev.competitions[0].headlines || []) {
@@ -121,14 +134,16 @@ function gameCard(ev, { withBox }) {
   const state = ev.status.type.state;
   const fav = isFav(ev);
   const tv = channels(ev);
+  const all = [...tv.national.map((name) => ({ name, team: "" })), ...tv.regional];
+  const big = [...new Set(all.map((c) => bigChannel(c.name)).filter(Boolean))];
+  const other = all.filter((c) => !bigChannel(c.name));
   const tvHtml = `
-    <div class="tv-row"><span class="tv-label">🇺🇸 USA</span>${
-      tv.national.length ? tv.national.map((n) => `<span class="chip national">${esc(n)}</span>`).join("") : `<span class="none">kein nationaler Sender</span>`
+    <div class="tv-row">${
+      big.length ? big.map((n) => `<span class="chip national">📺 ${esc(n)}</span>`).join("") : `<span class="none">Kein großer Sender, nur im League Pass</span>`
     }</div>
-    ${tv.regional.length ? `<div class="tv-row"><span class="tv-label">📍 Regional</span>${
-      tv.regional.map((c) => `<span class="chip">${esc(c.name)}${c.team ? `<small>${esc(c.team)}</small>` : ""}</span>`).join("")
-    }</div>` : ""}
-    <div class="tv-row"><span class="tv-label">🇩🇪 Deutschland</span><span class="chip de">NBA League Pass</span></div>`;
+    ${other.length ? `<details class="more"><summary>weitere Sender (${other.length})</summary><div class="tv-row">${
+      other.map((c) => `<span class="chip">${esc(c.name)}${c.team ? `<small>${esc(c.team)}</small>` : ""}</span>`).join("")
+    }</div></details>` : ""}`;
 
   const actions = [];
   if (state === "post") actions.push(`<a class="hl" href="${esc(highlightUrl(ev))}" target="_blank" rel="noopener">▶ Highlights</a>`);

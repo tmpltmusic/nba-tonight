@@ -80,6 +80,8 @@ h2 { margin: 24px 0 4px; font-size: 1.1rem; }
 .tv { display: grid; gap: 6px; margin-top: 10px; }
 .tv-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .tv-label { width: 100px; flex-shrink: 0; color: var(--muted); font-size: .8rem; }
+.more summary { cursor: pointer; color: var(--muted); font-size: .8rem; }
+.more .tv-row { margin-top: 6px; }
 .tv .none { color: var(--muted); font-size: .8rem; }
 .chip {
   background: var(--card-2); border: 1px solid var(--border);
