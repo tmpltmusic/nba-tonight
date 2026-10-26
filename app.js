@@ -36,6 +36,8 @@ async function getJSON(url) {
   return res.json();
 }
 const scoreboard = (d) => getJSON(`${API}/scoreboard?dates=${ymd(d)}`);
+const LAKERS_ID = 13; // ESPN-Team-ID der Lakers
+const news = (team) => getJSON(`${API}/news?limit=15${team ? `&team=${team}` : ""}`);
 const summary = (id) => getJSON(`${API}/summary?event=${id}`);
 
 // --- Hilfsfunktionen -----------------------------------------------------
@@ -229,6 +231,40 @@ async function load() {
     "Stand " + new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
 }
 
+// --- News ----------------------------------------------------------------
+
+let newsTab = "nba";
+
+function ago(iso) {
+  const min = Math.round((Date.now() - new Date(iso)) / 60_000);
+  if (min < 60) return `vor ${Math.max(min, 1)} Min.`;
+  if (min < 1440) return `vor ${Math.round(min / 60)} Std.`;
+  return new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", timeZone: TZ });
+}
+
+async function loadNews() {
+  const el = document.getElementById("news-list");
+  try {
+    const data = await news(newsTab === "lakers" ? LAKERS_ID : null);
+    const items = (data.articles || []).filter((a) => a.links?.web?.href);
+    el.innerHTML = items.length ? items.map((a) => `
+      <a class="news-item" href="${esc(a.links.web.href)}" target="_blank" rel="noopener">
+        ${a.images?.[0]?.url ? `<img src="${esc(a.images[0].url)}" alt="" loading="lazy">` : ""}
+        <div><strong>${esc(a.headline)}</strong><span>${a.published ? ago(a.published) : ""}</span></div>
+      </a>`).join("") : `<p class="empty">Keine News gefunden.</p>`;
+  } catch (e) {
+    el.innerHTML = `<p class="empty">News konnten nicht geladen werden.</p>`;
+  }
+}
+
+document.querySelectorAll("[data-news]").forEach((btn) => {
+  btn.onclick = () => {
+    newsTab = btn.dataset.news;
+    document.querySelectorAll("[data-news]").forEach((b) => b.classList.toggle("active", b === btn));
+    loadNews();
+  };
+});
+
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("button[data-box]");
   if (btn) toggleBox(btn);
@@ -241,5 +277,7 @@ document.getElementById("today").onclick = () => { offset = 0; load(); };
 setInterval(() => {
   if (document.visibilityState === "visible" && !document.querySelector(".box:not([hidden])")) load();
 }, REFRESH_MS);
+setInterval(() => { if (document.visibilityState === "visible") loadNews(); }, 10 * REFRESH_MS);
 
 load();
+loadNews();
