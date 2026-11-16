@@ -2,7 +2,11 @@
 // Daten kommen von der öffentlichen ESPN-Schnittstelle (kein API-Key nötig).
 
 const API = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba";
-const FAV = "LAL"; // Lakers immer oben
+// Lieblingsteams: werden hervorgehoben und stehen oben (in dieser Reihenfolge)
+const FAVS = [
+  { abbr: "LAL", id: 13, name: "Lakers", cls: "lakers" },
+  { abbr: "ORL", id: 19, name: "Magic", cls: "magic" },
+];
 const TZ = "Europe/Berlin";
 const REFRESH_MS = 60_000;
 
@@ -36,7 +40,6 @@ async function getJSON(url) {
   return res.json();
 }
 const scoreboard = (d) => getJSON(`${API}/scoreboard?dates=${ymd(d)}`);
-const LAKERS_ID = 13; // ESPN-Team-ID der Lakers
 const news = (team) => getJSON(`${API}/news?limit=15${team ? `&team=${team}` : ""}`);
 const summary = (id) => getJSON(`${API}/summary?event=${id}`);
 
@@ -48,11 +51,17 @@ function teams(ev) {
   const c = ev.competitions[0].competitors;
   return { away: c.find((t) => t.homeAway === "away"), home: c.find((t) => t.homeAway === "home") };
 }
-function isFav(ev) {
-  return ev.competitions[0].competitors.some((t) => t.team.abbreviation === FAV);
+// Erstes Lieblingsteam, das in diesem Spiel mitspielt (oder null)
+function favOf(ev) {
+  const abbrs = ev.competitions[0].competitors.map((t) => t.team.abbreviation);
+  return FAVS.find((f) => abbrs.includes(f.abbr)) || null;
+}
+function favRank(ev) {
+  const f = favOf(ev);
+  return f ? FAVS.indexOf(f) : FAVS.length;
 }
 function sortGames(events) {
-  return [...events].sort((a, b) => (isFav(b) - isFav(a)) || (new Date(a.date) - new Date(b.date)));
+  return [...events].sort((a, b) => (favRank(a) - favRank(b)) || (new Date(a.date) - new Date(b.date)));
 }
 
 // Sender sammeln, getrennt nach USA national und Regionalsendern (nur im Teamgebiet zu sehen)
@@ -134,7 +143,7 @@ function statusHtml(ev) {
 function gameCard(ev, { withBox }) {
   const { away, home } = teams(ev);
   const state = ev.status.type.state;
-  const fav = isFav(ev);
+  const fav = favOf(ev);
   const tv = channels(ev);
   const all = [...tv.national.map((name) => ({ name, team: "" })), ...tv.regional];
   const big = [...new Set(all.map((c) => bigChannel(c.name)).filter(Boolean))];
@@ -152,10 +161,10 @@ function gameCard(ev, { withBox }) {
   if (withBox && state !== "pre") actions.push(`<button data-box="${esc(ev.id)}">📊 Boxscore</button>`);
 
   return `
-    <article class="game${fav ? " lakers" : ""}" id="g${esc(ev.id)}">
+    <article class="game${fav ? ` fav ${fav.cls}` : ""}" id="g${esc(ev.id)}">
       <div class="game-head">
         <span class="time">${fmtTipDay(ev.date)} ${fmtTime(ev.date)} Uhr</span>
-        ${fav ? `<span class="badge">LAKERS</span>` : ""}
+        ${fav ? `<span class="badge ${fav.cls}">${esc(fav.name.toUpperCase())}</span>` : ""}
         ${statusHtml(ev)}
       </div>
       ${teamRow(away, state)}
@@ -245,7 +254,7 @@ function ago(iso) {
 async function loadNews() {
   const el = document.getElementById("news-list");
   try {
-    const data = await news(newsTab === "lakers" ? LAKERS_ID : null);
+    const data = await news(FAVS.find((f) => f.cls === newsTab)?.id ?? null);
     const items = (data.articles || []).filter((a) => a.links?.web?.href);
     el.innerHTML = items.length ? items.map((a) => `
       <a class="news-item" href="${esc(a.links.web.href)}" target="_blank" rel="noopener">
