@@ -1,6 +1,6 @@
 # 🏀 NBA Tonight
 
-Kleine Webseite mit den NBA-Spielen der Nacht (deutsche Zeit), allen übertragenden Sendern, den Ergebnissen von letzter Nacht samt Boxscores und Highlight-Links. Lakers-Spiele stehen immer oben.
+Kleine Webseite mit den NBA-Spielen der Nacht (deutsche Zeit), allen übertragenden Sendern, den Ergebnissen von letzter Nacht samt Boxscores und Highlight-Links. Lakers- und Magic-Spiele stehen immer oben und sind farbig hervorgehoben.
 
 - Daten: öffentliche ESPN-Schnittstelle (kein API-Key nötig)
 - Hosting: GitHub Pages (Settings → Pages → Branch `main`, Ordner `/`)

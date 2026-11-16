@@ -7,6 +7,8 @@
   --accent: #f5a623;
   --lakers-purple: #552583;
   --lakers-gold: #fdb927;
+  --magic-blue: #0077c0;
+  --magic-silver: #c4ced4;
   --live: #e5484d;
   --border: #2c3142;
 }
@@ -67,6 +69,10 @@ h2 { margin: 24px 0 4px; font-size: 1.1rem; }
 .game.lakers {
   border: 2px solid var(--lakers-gold);
   background: linear-gradient(135deg, rgba(85,37,131,.35), var(--card) 60%);
+}
+.game.magic {
+  border: 2px solid var(--magic-blue);
+  background: linear-gradient(135deg, rgba(0,119,192,.35), var(--card) 60%);
 }
 .game-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
 .time { font-weight: 700; font-size: 1.05rem; }
@@ -134,3 +140,4 @@ h2 { margin: 24px 0 4px; font-size: 1.1rem; }
 .news-item:hover strong { color: var(--accent); }
 
 footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 16px; }
+.badge.magic { background: var(--magic-blue); color: #fff; }
