@@ -302,6 +302,141 @@ async function loadStandings() {
   }
 }
 
+// --- Luka Dončić ---------------------------------------------------------
+
+const LUKA_ID = 3945274;
+const ATHLETE_PATH = `/apis/common/v3/sports/basketball/nba/athletes/${LUKA_ID}`;
+// Gleicher Pfad auf zwei ESPN-Hosts; der zweite ist Reserve, falls der erste ausfällt
+async function athlete(part) {
+  let err;
+  for (const host of ["https://site.web.api.espn.com", "https://site.api.espn.com"]) {
+    try { return await getJSON(`${host}${ATHLETE_PATH}/${part}`); } catch (e) { err = e; }
+  }
+  throw err;
+}
+
+// Wert aus einer Statistikzeile über name oder label holen
+function pick(block, row, ...keys) {
+  const names = block.names || [];
+  const labels = block.labels || [];
+  for (const k of keys) {
+    let i = names.indexOf(k);
+    if (i < 0) i = labels.indexOf(k);
+    if (i >= 0 && row?.[i] != null && row[i] !== "") return String(row[i]);
+  }
+  return "";
+}
+
+// Saisonschnitt aus /overview (statistics.splits)
+function seasonAverages(ov) {
+  const st = ov?.statistics;
+  const splits = st?.splits || [];
+  const split = splits.find((s) => /regular|season|postseason/i.test(s.displayName || "") && !/career/i.test(s.displayName || "")) || splits[0];
+  if (!split?.stats) return null;
+  const g = (...k) => pick(st, split.stats, ...k);
+  return {
+    title: split.displayName || "Saison",
+    gp: g("gamesPlayed", "GP"),
+    min: g("avgMinutes", "MIN"),
+    pts: g("avgPoints", "PTS"),
+    reb: g("avgRebounds", "REB"),
+    ast: g("avgAssists", "AST"),
+    stl: g("avgSteals", "STL"),
+    blk: g("avgBlocks", "BLK"),
+    to: g("avgTurnovers", "TO"),
+    fg: g("fieldGoalPct", "FG%"),
+    tp: g("threePointPct", "3P%"),
+    ft: g("freeThrowPct", "FT%"),
+  };
+}
+
+// Letztes Spiel aus einem Spielprotokoll suchen (overview.gameLog oder /gamelog)
+function lastGame(log) {
+  if (!log) return null;
+  const meta = log.events || {};
+  const rows = [];
+  const collect = (block, fallback) => {
+    for (const r of block?.events || []) if (r?.eventId && r.stats) rows.push({ id: String(r.eventId), stats: r.stats, block: block.names ? block : fallback });
+  };
+  for (const b of log.statistics || []) collect(b, log);
+  for (const t of log.seasonTypes || []) for (const c of t.categories || []) collect(c, log);
+  const dated = rows.filter((r) => meta[r.id]).sort((a, b) => new Date(meta[b.id].gameDate) - new Date(meta[a.id].gameDate));
+  const r = dated[0];
+  if (!r) return null;
+  const m = meta[r.id];
+  const g = (...k) => pick(r.block, r.stats, ...k);
+  return {
+    id: r.id,
+    date: m.gameDate,
+    atVs: m.atVs || "",
+    opp: m.opponent?.abbreviation || m.opponent?.displayName || "",
+    oppLogo: m.opponent?.logo || "",
+    result: m.gameResult || "",
+    score: m.score || "",
+    min: g("minutes", "MIN"),
+    pts: g("points", "PTS"),
+    reb: g("totalRebounds", "rebounds", "REB"),
+    ast: g("assists", "AST"),
+    stl: g("steals", "STL"),
+    blk: g("blocks", "BLK"),
+    to: g("turnovers", "TO"),
+    fg: g("fieldGoalsMade-fieldGoalsAttempted", "FG"),
+    tp: g("threePointFieldGoalsMade-threePointFieldGoalsAttempted", "3PT"),
+    ft: g("freeThrowsMade-freeThrowsAttempted", "FT"),
+  };
+}
+
+const tile = (val, label, big) => val ? `<div class="tile${big ? " big" : ""}"><b>${esc(val)}</b><span>${esc(label)}</span></div>` : "";
+const pct = (v) => v ? `${v.replace(/%$/, "")}%` : "";
+
+function lukaHtml(avg, last) {
+  const head = `
+    <div class="player-head">
+      <img src="https://a.espncdn.com/i/headshots/nba/players/full/${LUKA_ID}.png" alt="" loading="lazy">
+      <div>
+        <strong>Luka Dončić</strong>
+        <span>Los Angeles Lakers · #77 · Guard</span>
+      </div>
+      <a class="more-link" href="https://www.espn.com/nba/player/_/id/${LUKA_ID}/luka-doncic" target="_blank" rel="noopener">ESPN ›</a>
+    </div>`;
+  const avgHtml = avg ? `
+    <h3>${esc(/regular/i.test(avg.title) ? "Saisonschnitt" : /post/i.test(avg.title) ? "Playoff-Schnitt" : avg.title)}${avg.gp ? ` <small>${esc(avg.gp)} Spiele</small>` : ""}</h3>
+    <div class="tiles">
+      ${tile(avg.pts, "Punkte", true)}${tile(avg.reb, "Rebounds", true)}${tile(avg.ast, "Assists", true)}
+      ${tile(pct(avg.fg), "FG%")}${tile(pct(avg.tp), "3P%")}${tile(pct(avg.ft), "FT%")}
+      ${tile(avg.min, "Minuten")}${tile(avg.stl, "Steals")}${tile(avg.blk, "Blocks")}${tile(avg.to, "Ballverluste")}
+    </div>` : `<p class="empty">Saisonschnitt gerade nicht verfügbar.</p>`;
+  let lastHtml = "";
+  if (last) {
+    const day = new Date(last.date).toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit", timeZone: TZ });
+    const res = last.result ? `<span class="res ${last.result === "W" ? "w" : "l"}">${last.result === "W" ? "S" : "N"}</span>` : "";
+    lastHtml = `
+      <h3>Letztes Spiel <small>${esc(day)} ${esc(last.atVs)} ${esc(last.opp)} ${res} ${esc(last.score)}</small></h3>
+      <div class="tiles">
+        ${tile(last.pts, "Punkte", true)}${tile(last.reb, "Rebounds", true)}${tile(last.ast, "Assists", true)}
+        ${tile(last.fg, "FG")}${tile(last.tp, "3PT")}${tile(last.ft, "FT")}
+        ${tile(last.min, "Minuten")}${tile(last.stl, "Steals")}${tile(last.blk, "Blocks")}${tile(last.to, "Ballverluste")}
+      </div>`;
+  }
+  return head + avgHtml + lastHtml;
+}
+
+async function loadLuka() {
+  const el = document.getElementById("luka-card");
+  let ov = null, log = null;
+  try { ov = await athlete("overview"); } catch (e) { /* unten Ersatz */ }
+  let avg = seasonAverages(ov);
+  let last = lastGame(ov?.gameLog);
+  if (!last) {
+    try { log = await athlete("gamelog"); last = lastGame(log); } catch (e) { /* bleibt leer */ }
+  }
+  if (!avg && !last) {
+    el.innerHTML = `<p class="empty">Stats konnten nicht geladen werden. <a href="https://www.espn.com/nba/player/_/id/${LUKA_ID}/luka-doncic" target="_blank" rel="noopener">Bei ESPN ansehen</a></p>`;
+    return;
+  }
+  el.innerHTML = lukaHtml(avg, last);
+}
+
 // --- News ----------------------------------------------------------------
 
 let newsTab = "nba";
@@ -352,6 +487,9 @@ setInterval(() => { if (document.visibilityState === "visible") loadNews(); }, 1
 
 setInterval(() => { if (document.visibilityState === "visible") loadStandings(); }, 10 * REFRESH_MS);
 
+setInterval(() => { if (document.visibilityState === "visible") loadLuka(); }, 10 * REFRESH_MS);
+
 load();
 loadNews();
 loadStandings();
+loadLuka();

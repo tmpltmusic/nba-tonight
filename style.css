@@ -182,3 +182,26 @@ footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 16p
   .conf .abbr { display: inline; }
   .conf .opt { display: none; }
 }
+
+/* --- Luka Dončić -------------------------------------------------------- */
+#luka { scroll-margin-top: 70px; }
+.player {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px;
+  border-left: 4px solid var(--lakers-gold);
+}
+.player-head { display: flex; align-items: center; gap: 12px; }
+.player-head img { width: 64px; height: 48px; object-fit: cover; object-position: top; border-radius: 8px; background: var(--card-2); }
+.player-head strong { display: block; font-size: 1.05rem; }
+.player-head span { color: var(--muted); font-size: .8rem; }
+.player-head .more-link { margin-left: auto; font-size: .85rem; text-decoration: none; }
+.player h3 { margin: 14px 0 8px; font-size: .9rem; }
+.player h3 small { color: var(--muted); font-weight: 400; margin-left: 4px; }
+.player .res { display: inline-block; padding: 0 5px; border-radius: 4px; font-weight: 700; color: #fff; }
+.player .res.w { background: #30a46c; }
+.player .res.l { background: var(--live); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 6px; }
+.tile { background: var(--card-2); border-radius: 8px; padding: 6px 4px; text-align: center; }
+.tile b { display: block; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.tile span { display: block; color: var(--muted); font-size: .7rem; }
+.tile.big b { font-size: 1.35rem; color: var(--lakers-gold); }
+@media (prefers-color-scheme: light) { .tile.big b { color: var(--lakers-purple); } }

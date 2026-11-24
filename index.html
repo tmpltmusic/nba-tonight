@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="dark light">
   <title>NBA Tonight</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏀</text></svg>">
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
   <header class="top">
@@ -16,6 +16,7 @@
       <span id="day-label"></span>
       <button id="next" aria-label="Einen Tag vor">›</button>
       <button id="today" class="today-btn">Heute</button>
+      <a href="#luka" class="today-btn jump">Luka</a>
       <a href="#standings" class="today-btn jump">Tabelle</a>
     </nav>
   </header>
@@ -31,6 +32,12 @@
     <section>
       <h2 id="last-title">Letzte Nacht</h2>
       <div id="last" class="games"><p class="loading">Lade Ergebnisse …</p></div>
+    </section>
+
+    <section id="luka">
+      <h2>Luka Dončić</h2>
+      <p class="hint">Saisonschnitt und letztes Spiel, aktualisiert sich automatisch.</p>
+      <div id="luka-card" class="player"><p class="loading">Lade Stats …</p></div>
     </section>
 
     <section id="standings">
@@ -57,6 +64,6 @@
     Daten: ESPN · Lakers- und Magic-Spiele stehen immer oben · <span id="updated"></span>
   </footer>
 
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>
