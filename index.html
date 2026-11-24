@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="dark light">
   <title>NBA Tonight</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏀</text></svg>">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <header class="top">
@@ -16,6 +16,7 @@
       <span id="day-label"></span>
       <button id="next" aria-label="Einen Tag vor">›</button>
       <button id="today" class="today-btn">Heute</button>
+      <a href="#standings" class="today-btn jump">Tabelle</a>
     </nav>
   </header>
 
@@ -30,6 +31,12 @@
     <section>
       <h2 id="last-title">Letzte Nacht</h2>
       <div id="last" class="games"><p class="loading">Lade Ergebnisse …</p></div>
+    </section>
+
+    <section id="standings">
+      <h2>Tabelle</h2>
+      <p class="hint legend"><span class="key po"></span> Platz 1–6: Playoffs <span class="key pi"></span> Platz 7–10: Play-In</p>
+      <div id="standings-list" class="standings"><p class="loading">Lade Tabelle …</p></div>
     </section>
   </main>
 
@@ -50,6 +57,6 @@
     Daten: ESPN · Lakers- und Magic-Spiele stehen immer oben · <span id="updated"></span>
   </footer>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

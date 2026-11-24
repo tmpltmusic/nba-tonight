@@ -42,6 +42,8 @@ async function getJSON(url) {
 const scoreboard = (d) => getJSON(`${API}/scoreboard?dates=${ymd(d)}`);
 const news = (team) => getJSON(`${API}/news?limit=15${team ? `&team=${team}` : ""}`);
 const summary = (id) => getJSON(`${API}/summary?event=${id}`);
+// Tabelle liegt unter /apis/v2 (nicht /apis/site/v2)
+const standings = () => getJSON("https://site.api.espn.com/apis/v2/sports/basketball/nba/standings");
 
 // --- Hilfsfunktionen -----------------------------------------------------
 
@@ -240,6 +242,66 @@ async function load() {
     "Stand " + new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
 }
 
+// --- Tabelle -------------------------------------------------------------
+
+function stat(entry, ...keys) {
+  return (entry.stats || []).find((s) => keys.includes(s.name) || keys.includes(s.type));
+}
+const num = (entry, ...keys) => Number(stat(entry, ...keys)?.value ?? NaN);
+const shown = (entry, ...keys) => {
+  const s = stat(entry, ...keys);
+  return s ? (s.displayValue ?? s.summary ?? String(s.value ?? "")) : "";
+};
+
+function confTable(conf) {
+  const entries = [...(conf.standings?.entries || [])].sort((a, b) =>
+    (num(a, "playoffSeed") - num(b, "playoffSeed")) ||
+    (num(b, "winPercent") - num(a, "winPercent")));
+  const rows = entries.map((e, i) => {
+    const seed = num(e, "playoffSeed") || i + 1;
+    const t = e.team || {};
+    const fav = FAVS.find((f) => f.abbr === t.abbreviation || String(f.id) === String(t.id));
+    const zone = seed <= 6 ? "po" : seed <= 10 ? "pi" : "";
+    const logo = t.logos?.[0]?.href;
+    let pct = shown(e, "winPercent");
+    if (pct.startsWith("0.")) pct = pct.slice(1);
+    const gb = shown(e, "gamesBehind");
+    return `
+      <tr class="${zone}${fav ? ` fav ${fav.cls}` : ""}${seed === 10 ? " cut" : ""}${seed === 6 ? " cut6" : ""}">
+        <td class="seed">${seed}</td>
+        <td class="tm">${logo ? `<img src="${esc(logo)}" alt="" loading="lazy">` : ""}<span class="full">${esc(t.shortDisplayName || t.displayName)}</span><span class="abbr">${esc(t.abbreviation)}</span></td>
+        <td>${esc(shown(e, "wins"))}</td>
+        <td>${esc(shown(e, "losses"))}</td>
+        <td>${esc(pct)}</td>
+        <td>${esc(gb === "0" ? "–" : gb)}</td>
+        <td class="opt">${esc(shown(e, "lasttengames", "Last Ten Games"))}</td>
+        <td class="opt">${esc(shown(e, "streak"))}</td>
+      </tr>`;
+  }).join("");
+  const title = /east/i.test(conf.name || conf.abbreviation) ? "Eastern Conference" : /west/i.test(conf.name || conf.abbreviation) ? "Western Conference" : conf.name;
+  return `
+    <div class="conf">
+      <h3>${esc(title)}</h3>
+      <table>
+        <thead><tr><th>#</th><th class="tm">Team</th><th title="Siege">S</th><th title="Niederlagen">N</th><th title="Siegquote">%</th><th title="Rückstand auf Platz 1">GB</th><th class="opt" title="Letzte 10 Spiele">L10</th><th class="opt" title="Serie">Serie</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+async function loadStandings() {
+  const el = document.getElementById("standings-list");
+  try {
+    const data = await standings();
+    const confs = (data.children || []).filter((c) => c.standings?.entries?.length);
+    // Osten zuerst, dann Westen
+    confs.sort((a, b) => (/west/i.test(a.name) ? 1 : 0) - (/west/i.test(b.name) ? 1 : 0));
+    el.innerHTML = confs.length ? confs.map(confTable).join("") : `<p class="empty">Keine Tabelle verfügbar.</p>`;
+  } catch (e) {
+    el.innerHTML = `<p class="empty">Tabelle konnte nicht geladen werden.</p>`;
+  }
+}
+
 // --- News ----------------------------------------------------------------
 
 let newsTab = "nba";
@@ -288,5 +350,8 @@ setInterval(() => {
 }, REFRESH_MS);
 setInterval(() => { if (document.visibilityState === "visible") loadNews(); }, 10 * REFRESH_MS);
 
+setInterval(() => { if (document.visibilityState === "visible") loadStandings(); }, 10 * REFRESH_MS);
+
 load();
 loadNews();
+loadStandings();
