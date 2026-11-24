@@ -141,3 +141,44 @@ h2 { margin: 24px 0 4px; font-size: 1.1rem; }
 
 footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 16px; }
 .badge.magic { background: var(--magic-blue); color: #fff; }
+
+/* --- Tabelle ------------------------------------------------------------ */
+.day-nav .jump {
+  background: var(--card); color: var(--text); text-decoration: none;
+  border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px;
+}
+#standings { scroll-margin-top: 70px; }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.legend .key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-left: 6px; }
+.legend .key:first-child { margin-left: 0; }
+.key.po { background: #30a46c; }
+.key.pi { background: var(--accent); }
+
+.standings { display: grid; gap: 16px; }
+@media (min-width: 760px) { .standings { grid-template-columns: 1fr 1fr; } }
+.conf { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; min-width: 0; }
+.conf h3 { margin: 2px 0 8px; font-size: .95rem; }
+.conf table { border-collapse: collapse; width: 100%; font-size: .82rem; white-space: nowrap; }
+.conf th, .conf td { padding: 5px 4px; text-align: right; border-bottom: 1px solid var(--border); }
+.conf th { color: var(--muted); font-weight: 600; }
+.conf .seed { width: 26px; text-align: center; color: var(--muted); border-left: 3px solid transparent; }
+.conf tr.po .seed { border-left-color: #30a46c; }
+.conf tr.pi .seed { border-left-color: var(--accent); }
+.conf tr.cut6 td { border-bottom: 1px dashed var(--muted); }
+.conf tr.cut td { border-bottom: 2px solid var(--muted); }
+.conf .tm { text-align: left; }
+.conf td.tm { display: flex; align-items: center; gap: 6px; }
+.conf td.tm img { width: 20px; height: 20px; object-fit: contain; }
+.conf .abbr { display: none; }
+.conf tr.fav td { font-weight: 700; }
+.conf tr.lakers td { background: rgba(85,37,131,.35); }
+.conf tr.lakers td.tm { color: var(--lakers-gold); }
+.conf tr.magic td { background: rgba(0,119,192,.3); }
+@media (prefers-color-scheme: light) {
+  .conf tr.lakers td.tm { color: var(--lakers-purple); }
+}
+@media (max-width: 420px) {
+  .conf .full { display: none; }
+  .conf .abbr { display: inline; }
+  .conf .opt { display: none; }
+}
